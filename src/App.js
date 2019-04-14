@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import './App.css'
 import update from 'immutability-helper'
-import Card from './components/Card'
+import Card, { HandStatus } from './components/Card'
 import { Header } from './components/Header'
 import { classes } from './data'
 
@@ -24,7 +24,8 @@ class App extends Component {
     //"starting = total - 16" instead of putting it in data?
     const data = [...Array(total)].map( (e, index) =>
       ({id: order ? order[index] : index+1,
-        visible: starting > index })
+        visible: starting > index,
+        handStatus: starting > index ? HandStatus.IN_HAND : HandStatus.NOT_IN_HAND })
     )
     this.save(character, data)
     this.setState({ cards: data })
@@ -70,10 +71,36 @@ class App extends Component {
     this.setState(
 			update(this.state, {
 				cards: {
-					[index]: { visible: { $apply: (e) => !e } }
+					[index]: { 
+            visible: { $apply: (e) => !e },
+            handStatus: { $apply: (e) => ((e === HandStatus.NOT_IN_HAND) ? HandStatus.IN_HAND : HandStatus.NOT_IN_HAND )},
+          }
 				},
 			})
     , this.save)
+  }
+
+  toggleHandStatus(index) {
+    this.setState(
+      update(this.state, {
+        cards: {
+          [index]: { handStatus: { $apply: (e) => {
+            switch(e) {
+              case HandStatus.IN_HAND:
+                return HandStatus.ACTIVE;
+              case HandStatus.ACTIVE:
+                return HandStatus.DISCARD;
+              case HandStatus.DISCARD:
+                return HandStatus.LOST;
+              case HandStatus.LOST:
+                return HandStatus.IN_HAND;
+              default:
+                return HandStatus.NOT_IN_HAND;
+            } 
+          } } }
+        }
+      })
+    )
   }
 
   toggleEditing() {
@@ -109,10 +136,12 @@ class App extends Component {
               character={this.state.character}
               id={item.id}
               index={i}
+              handStatus={item.handStatus}
               moveCard={this.moveCard.bind(this)}
               showToggle={this.state.editing}
               visible={item.visible}
               toggleCard={this.toggleCard.bind(this)}
+              toggleHandStatus={this.toggleHandStatus.bind(this, i)}
             />
           ))}
         </div>

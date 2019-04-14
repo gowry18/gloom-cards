@@ -3,6 +3,14 @@ import { findDOMNode } from 'react-dom'
 import { DragSource, DropTarget } from 'react-dnd'
 import './Card.css'
 
+export const HandStatus = {
+	NOT_IN_HAND: 'not-in-hand',
+	IN_HAND: 'in-hand',
+	ACTIVE: 'active',
+	DISCARD: 'discard',
+	LOST: 'lost'
+}
+
 const cardSource = {
 	beginDrag: (props) => {
 		return {
@@ -83,21 +91,33 @@ const Card = ({
 	index,
 	showToggle,
 	visible,
-	toggleCard
+	handStatus,
+	toggleCard,
+	toggleHandStatus
 }) => {
 	if (!showToggle && !visible) return false;
   return connectDragSource(connectDropTarget(
-    <div className={`card ${visible ? '' : 'card--hidden'} ${isDragging ? 'card--dragged' : ''}`}>
-			{ showToggle &&
+    <div className={`card ${visible ? '' : 'card--hidden'} ${isDragging ? 'card--dragged' : ''} ${handStatus === HandStatus.NOT_IN_HAND || handStatus === HandStatus.IN_HAND ? '' : 'card--' + handStatus}`}>
+			{ showToggle ? (
 				<label className={`cardToggle ${visible ? 'cardToggleChecked' : ''}`}>
 					<input
 						type="checkbox"
+						defaultChecked={true}
 						checked={visible ? true : false}
-						onClick={() => toggleCard(index)}
+						onClick={(index) => toggleCard(index)}
 						/>
 				</label>
-			}
-      <img src={`cards/${character}-${id}.jpg`} alt="" />
+			) : (
+				<label className={`handToggle ${visible ? 'cardToggleChecked' : ''}`}>
+				</label>
+			)
+		}
+		{ isDragging || !visible || handStatus === HandStatus.NOT_IN_HAND ? (
+				<img src={`cards/${character}-${id}.jpg`} alt="" />
+			) : (
+				<img src={`cards/${character}-${id}.jpg`} alt="" onDoubleClick={(index) => toggleHandStatus(index)} />
+			)
+		}
     </div>
   ));
 }

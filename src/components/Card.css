@@ -35,11 +35,22 @@
   opacity: 0;
 }
 
+.card--lost {
+  border: solid 5px red;
+}
+
+.card--active {
+  border: solid 5px green;
+}
+
+.card--discard {
+  border: solid 5px yellow;
+}
+
 .card img {
   width: 100%;
   display: block;
 }
-
 
 .cardToggle {
   display: block;
